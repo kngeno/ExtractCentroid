@@ -206,64 +206,55 @@ class ExtractCentroid:
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
 
-            source_layer = iface.addVectorLayer("/home/upande/Sample_Data/sample_data.shp", "sample_data", "ogr")
+            filename = os.path.abspath("Sample_Data/sample_data.shp")
+            iface.messageBar().pushMessage("Shapefile loaded ...", QgsMessageBar.INFO)
+
+            source_layer = iface.addVectorLayer(filename, "sample_data", "ogr")
+
+            fields = QgsFields()
+            fields.append(QgsField("code", QVariant.String))
+            fields.append(QgsField("x", QVariant.String))
+            fields.append(QgsField("y", QVariant.String))
 
             # Define additional attributes already on the layer level
-            centroid_layer = QgsVectorLayer('Polygon?crs=epsg:4326&field=code:string', 'sample_data' , 'memory')
+            centroid_layer = QgsVectorFileWriter(
+                filename, "UTF8", fields, QGis.WKBPoint, QgsCoordinateReferenceSystem(4326), "ESRI Shapefile")
+
+            if centroid_layer.hasError() != QgsVectorFileWriter.NoError:
+                print("Error when creating centroid: ", centroid_layer.errorMessage())
+                iface.messageBar().pushMessage("Feature addition failed.", QgsMessageBar.CRITICAL)
 
             centroid_layer.startEditing()
             # Loop over all features
             for source_feature in source_layer.getFeatures():
                 geometry = source_feature.geometry()
-                centroid = geometry.centroid()
-                name = source_feature["code"]
-                # or use source_feature['code']
-                
+                centroid = geometry.centroid().asPoint()
+                pts = [Centroid]
+                name = source_feature["code"]             
 
                 # Create the new feature with the fields of the ogr layer
                 # And set geometry and attribute before adding it to the target layer
                 centroid_feature = QgsFeature(source_layer.fields())
                 centroid_feature = source_feature.attributes()
-                feat.setAttributes(centroid_feature)
+                centroid_feature.setAttributes(centroid_feature)
                 centroid_feature.setGeometry(centroid)
                 centroid_feature['code'] = name
                 centroid_layer.addFeature(centroid_feature)
 
+                # Loop centroids to shapefile
                 for x,y in pts:
-                    feat = QgsFeature()
+                    centroid_feature = QgsFeature()
                     point = QgsPoint(x,y)
-                    feat.setGeometry(QgsGeometry.fromPoint(point))
-                    feat.setAttributes(attrs)
-                    prov.addFeatures([feat])
+                    centroid_feature.setGeometry(QgsGeometry.fromPoint(point))
+                    centroid_feature.setAttributes(attrs)
+                    prov.addFeatures([centroid_feature])
 
             centroid_layer.commitChanges()
 
             # Add the layer to the registry
             QgsMapLayerRegistry.instance().addMapLayer(centroid_layer)
 
-            layerName = "sample_data"
-            layer = QgsMapLayerRegistry.instance().mapLayersByName(layerName)[0]
-            print layer.name()
+            # Save centroid layer as csv format
+            QgsVectorFileWriter.writeAsVectorFormat(centroid_layer, r'extract_centroid', "utf-8", None, "CSV", layerOptions='GEOMETRY=AS_XYZ')
+            iface.messageBar().pushMessage("Extract centroid saved as csv ...", QgsMessageBar.INFO)
 
-            epsg = layer.crs().postgisSrid()
-
-            uri = "Point?crs=epsg:" + str(epsg) + "&field=code:string"
-
-            mem_layer = QgsVectorLayer(uri,
-                                       'point',
-                                       'memory')
-
-            prov = mem_layer.dataProvider()
-
-            i= 0
-
-            for f in layer.getFeatures():
-                feat = QgsFeature()
-                pt = f.geometry().centroid().asPoint()
-                print pt
-                feat.setAttributes([i])
-                feat.setGeometry(QgsGeometry.fromPoint(pt))
-                prov.addFeatures([feat])
-                i += 1
-
-            QgsMapLayerRegistry.instance().addMapLayer(mem_layer)
