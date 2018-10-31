@@ -1,0 +1,39 @@
+# This file contains metadata for your plugin. Since 
+# version 2.0 of QGIS this is the proper way to supply 
+# information about a plugin. The old method of 
+# embedding metadata in __init__.py will 
+# is no longer supported since version 2.0.
+
+# This file should be included when you package your plugin.# Mandatory items:
+
+[general]
+name=Extract Centroid
+qgisMinimumVersion=2.0
+description=A PyQGIS plugin to extract centroids from polygons
+version=0.1
+author=Kevin Ng'eno
+email=kngeno.kevin@gmail.com
+
+about=A client has requested for the development of a Python QGIS plugin which contains a single click action that extracts the centroid of the polygons in the attached sample data; this information should be saved in a comma-separated file. This file should contain three columns – code (similar to the one in the shapefile), X and Y coordinates respectively.
+
+tracker=http://github.com/kngeno/ExtractCentroid/tracker
+repository=http://github.com/kngeno/ExtractCentroid
+# End of mandatory metadata
+
+# Recommended items:
+
+# Uncomment the following line and add your changelog:
+# changelog=
+
+# Tags are comma separated with spaces allowed
+tags=python
+
+homepage=http://ngenokevin.com
+category=Vector
+icon=icon.png
+# experimental flag
+experimental=True
+
+# deprecated flag (applies to the whole plugin, not just a single version)
+deprecated=False
+
