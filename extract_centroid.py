@@ -210,15 +210,16 @@ class ExtractCentroid:
             iface.messageBar().pushMessage("Shapefile loaded ...", QgsMessageBar.INFO)
 
             source_layer = iface.addVectorLayer(filename, "sample_data", "ogr")
+            centroid = QgsVectorLayer('Point', 'Centroid' , 'memory')
 
             fields = QgsFields()
             fields.append(QgsField("code", QVariant.String))
-            fields.append(QgsField("x", QVariant.String))
-            fields.append(QgsField("y", QVariant.String))
+            fields.append(QgsField("x", QVariant.Double))
+            fields.append(QgsField("y", QVariant.Double))
 
             # Define additional attributes already on the layer level
             centroid_layer = QgsVectorFileWriter(
-                filename, "UTF8", fields, QGis.WKBPoint, QgsCoordinateReferenceSystem(4326), "ESRI Shapefile")
+                centroid, "UTF8", fields, QGis.WKBPoint, QgsCoordinateReferenceSystem(4326), "ESRI Shapefile")
 
             if centroid_layer.hasError() != QgsVectorFileWriter.NoError:
                 print("Error when creating centroid: ", centroid_layer.errorMessage())
